@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Study Planner Pro</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Ambient background grid -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- ───────────── HEADER ───────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">⬡</span>
+        <div>
+          <h1 class="brand-name">Study Planner <span class="brand-pro">PRO</span></h1>
+          <p class="brand-sub">Focus · Plan · Achieve</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div id="quoteBtn" class="icon-btn" title="New quote" aria-label="New motivational quote">✦</div>
+        <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark mode">◑</button>
+      </div>
+    </div>
+    <!-- Motivational quote ticker -->
+    <div class="quote-bar" id="quoteBar">
+      <span class="quote-label">✦ QUOTE</span>
+      <span class="quote-text" id="quoteText"></span>
+    </div>
+  </header>
+
+  <!-- ───────────── MAIN ───────────── -->
+  <main class="main-grid">
+
+    <!-- ── LEFT COLUMN ── -->
+    <section class="col-left">
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card" id="statTotal">
+          <div class="stat-value" id="statTotalVal">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card accent" id="statDone">
+          <div class="stat-value" id="statDoneVal">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card" id="statTime">
+          <div class="stat-value" id="statTimeVal">0h</div>
+          <div class="stat-label">Study Time</div>
+        </div>
+        <div class="stat-card" id="statProgress">
+          <div class="stat-value" id="statProgressVal">0%</div>
+          <div class="stat-label">Progress</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-track" title="Overall progress">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-label" id="progressLabel">0% complete</div>
+      </div>
+
+      <!-- Add Task Form -->
+      <div class="card form-card">
+        <h2 class="card-title"><span class="card-icon">＋</span> New Study Task</h2>
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="subjectInput">Subject / Topic</label>
+            <input id="subjectInput" type="text" placeholder="e.g. Calculus Chapter 4" maxlength="60" autocomplete="off" />
+          </div>
+          <div class="input-group">
+            <label for="timeInput">Duration (min)</label>
+            <input id="timeInput" type="number" placeholder="25" min="1" max="600" />
+          </div>
+          <div class="input-group">
+            <label for="priorityInput">Priority</label>
+            <select id="priorityInput">
+              <option value="low">🟢 Low</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="high">🔴 High</option>
+            </select>
+          </div>
+          <div class="input-group input-group--full">
+            <label for="noteInput">Note (optional)</label>
+            <input id="noteInput" type="text" placeholder="Chapter, page number, goal…" maxlength="120" autocomplete="off" />
+          </div>
+        </div>
+        <button id="addTaskBtn" class="btn btn-primary">Add Task</button>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+        <button class="filter-btn" data-filter="completed">Done</button>
+        <button class="filter-btn" data-filter="high">🔴 High</button>
+        <div class="sort-wrap">
+          <select id="sortSelect">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="priority">By priority</option>
+            <option value="time">By time</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Task list -->
+      <div id="taskList" class="task-list" role="list" aria-label="Study tasks"></div>
+      <div id="emptyState" class="empty-state" hidden>
+        <div class="empty-icon">📚</div>
+        <p>No tasks yet. Add your first study task above!</p>
+      </div>
+
+    </section>
+
+    <!-- ── RIGHT COLUMN ── -->
+    <aside class="col-right">
+
+      <!-- Pomodoro Timer -->
+      <div class="card timer-card">
+        <h2 class="card-title"><span class="card-icon">⏱</span> Pomodoro Timer</h2>
+
+        <div class="timer-mode-tabs">
+          <button class="mode-tab active" data-mode="focus">Focus</button>
+          <button class="mode-tab" data-mode="short">Short Break</button>
+          <button class="mode-tab" data-mode="long">Long Break</button>
+        </div>
+
+        <div class="timer-ring-wrap">
+          <svg class="timer-ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="ring-track" cx="100" cy="100" r="88" />
+            <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="88" />
+          </svg>
+          <div class="timer-display">
+            <div class="timer-time" id="timerDisplay">25:00</div>
+            <div class="timer-session" id="timerSession">Session 1</div>
+          </div>
+        </div>
+
+        <div class="timer-controls">
+          <button id="timerStart" class="btn btn-primary">Start</button>
+          <button id="timerPause" class="btn btn-ghost" disabled>Pause</button>
+          <button id="timerReset" class="btn btn-ghost">Reset</button>
+        </div>
+
+        <div class="timer-meta">
+          <span>🍅 Sessions today: <strong id="pomodoroCount">0</strong></span>
+          <span>Next: <strong id="nextBreak">Short break</strong></span>
+        </div>
+
+        <div class="custom-duration">
+          <label for="customFocus">Custom focus (min):</label>
+          <input id="customFocus" type="number" value="25" min="1" max="120" />
+          <button id="applyCustom" class="btn btn-ghost btn-sm">Apply</button>
+        </div>
+      </div>
+
+      <!-- Analytics Chart -->
+      <div class="card analytics-card">
+        <h2 class="card-title"><span class="card-icon">◈</span> Session Analytics</h2>
+        <div class="chart-wrap">
+          <canvas id="analyticsChart"></canvas>
+        </div>
+        <div class="analytics-summary" id="analyticsSummary"></div>
+      </div>
+
+      <!-- Quick tips -->
+      <div class="card tips-card">
+        <h2 class="card-title"><span class="card-icon">◉</span> Study Tips</h2>
+        <ul class="tips-list" id="tipsList"></ul>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
